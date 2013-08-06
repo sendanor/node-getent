@@ -5,8 +5,8 @@ Get entries from administrative databases for Node.js.
 
 It's Node.js implementation of the features in the getent system command. 
 
-Why use system calls and not reading filesystem?
-------------------------------------------------
+Why use system calls and not read filesystem?
+---------------------------------------------
 
 Some systems don't use files like `/etc/passwd`. 
 
