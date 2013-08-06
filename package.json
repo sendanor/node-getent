@@ -17,7 +17,7 @@
     "getent",
     "getpwent",
 	"setpwent",
-	"endpwent""
+	"endpwent"
   ],
   "dependencies":{
     "node-gyp": "*"
