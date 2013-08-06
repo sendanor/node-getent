@@ -23,11 +23,9 @@ TODO
 
 These databases are not yet implemented (fully):
 
-* `group`
-* `hosts`
-* `services`
-* `protocols`
-* `networks`
+* New databases: `group`, `hosts`, `services`, `protocols` and `networks`
+* Unit tests
+* Search by UID/GIDs
 
 Examples
 --------
