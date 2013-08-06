@@ -3,7 +3,7 @@ node-getent
 
 Get entries from administrative databases for Node.js.
 
-It's Node.js implementation of the getent system call. It's made using same C functions as the original command.
+It's Node.js implementation of the features in the getent system command. Its using the same system calls as the original command.
 
 Install
 -------
@@ -41,6 +41,8 @@ Also maybe these (which were not documented for getent command):
 * Database rpc - Implement `getrpcent` etc
 * Database tty - Implement `getttyent` etc
 * Database mnt - Implement `getmntent`
+
+If this library some day has more features than the original command, then it should have runnable `node-getent` when installed globally.
 
 Feel free to submit issues if you would like to see another feature or would need one of these implemented sooner. I'll accept pull requests, too!
 
