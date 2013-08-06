@@ -3,7 +3,16 @@ node-getent
 
 Get entries from administrative databases for Node.js.
 
-It's Node.js implementation of the features in the getent system command. Its using the same system calls as the original command.
+It's Node.js implementation of the features in the getent system command. 
+
+Why use system calls and not reading filesystem?
+------------------------------------------------
+
+Some systems don't use files like `/etc/passwd`. 
+
+For example if you are using a LDAP-based systems you must use standard system calls.
+
+By using calls you don't need to bother what type of database the system is currently using.
 
 Install
 -------
