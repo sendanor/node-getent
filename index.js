@@ -24,6 +24,27 @@ databases.passwd = function(keys, fn) {
 	}
 };
 
+/* Implement group database search */
+databases.group = function(keys, fn) {
+	var item;
+	internal.setgrent();
+	try {
+		while(item = internal.getgrent()) {
+			var key = item && item.name;
+
+			if(key && keys && (keys.indexOf(key) < 0)) {
+				continue;
+			}
+
+			if(item) {
+				fn(item);
+			}
+		}
+	} finally {
+		internal.endgrent();
+	}
+};
+
 /** Get entries from administrative database
  * @param {string} database Database name. Currently only supports `passwd`.
  * @param {string|array} keys Key or array of keys to to fetch
