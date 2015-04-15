@@ -1,6 +1,6 @@
 {
   "name": "getent",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "Get entries from administrative databases for Node.js",
   "main": "index.js",
   "scripts": {
