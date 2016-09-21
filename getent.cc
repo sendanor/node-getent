@@ -13,9 +13,15 @@
 using namespace v8;
 
 
-/* Binding for getpwent */
-Handle<Value> getpwentMethod(const Arguments& args) {
-	HandleScope scope;
+/* 
+* Binding for getpwent
+* The getpwent() function returns a pointer to a structure containing the broken-out fields of a record from the password database 
+* (e.g., the local password file /etc/passwd, NIS, and LDAP). 
+* The first time getpwent() is called, it returns the first entry; thereafter, it returns successive entries.
+*/
+void getpwentMethod(const FunctionCallbackInfo<Value>& args) {
+	Isolate* isolate = args.GetIsolate();
+
 	struct passwd *tmp;
 	int err;
 	errno = 0;
@@ -24,30 +30,36 @@ Handle<Value> getpwentMethod(const Arguments& args) {
 
 	// Check for errors
 	if(err != 0) {
-		ThrowException(Exception::Error(String::New(strerror(err))));
-		return scope.Close(Undefined());
+		isolate->ThrowException(Exception::TypeError(
+        String::NewFromUtf8(isolate, strerror(err))));
+    return;
 	}
 
-	// Check for end of data
+	// // Check for end of data
 	if(tmp == NULL) {
-		return scope.Close(Undefined());
+		return;
 	}
 
 	// Return the data as an object
-	Local<Object> obj = Object::New();
-	obj->Set(String::NewSymbol("name"),   String::New(tmp->pw_name));
-	obj->Set(String::NewSymbol("passwd"), String::New(tmp->pw_passwd));
-	obj->Set(String::NewSymbol("uid"),    Number::New(tmp->pw_uid));
-	obj->Set(String::NewSymbol("gid"),    Number::New(tmp->pw_gid));
-	obj->Set(String::NewSymbol("gecos"),  String::New(tmp->pw_gecos));
-	obj->Set(String::NewSymbol("dir"),    String::New(tmp->pw_dir));
-	obj->Set(String::NewSymbol("shell"),  String::New(tmp->pw_shell));
-	return scope.Close(obj);
+	Local<Object> obj = Object::New(isolate);
+
+	obj->Set(String::NewFromUtf8(isolate, "name"),   String::NewFromUtf8(isolate,tmp->pw_name));
+	obj->Set(String::NewFromUtf8(isolate, "passwd"),String::NewFromUtf8(isolate,tmp->pw_passwd));
+	obj->Set(String::NewFromUtf8(isolate, "uid"),   Number::New(isolate,tmp->pw_uid));
+	obj->Set(String::NewFromUtf8(isolate, "gid"),   Number::New(isolate,tmp->pw_gid));
+	obj->Set(String::NewFromUtf8(isolate, "gecos"), String::NewFromUtf8(isolate,tmp->pw_gecos));
+	obj->Set(String::NewFromUtf8(isolate, "dir"),   String::NewFromUtf8(isolate,tmp->pw_dir));
+	obj->Set(String::NewFromUtf8(isolate, "shell"), String::NewFromUtf8(isolate,tmp->pw_shell));
+	args.GetReturnValue().Set(obj);
 }
 
-/* Binding for setpwent */
-Handle<Value> setpwentMethod(const Arguments& args) {
-	HandleScope scope;
+/* 
+* Binding for setpwent 
+* The setpwent() function rewinds to the beginning of the password database. 
+*/
+void setpwentMethod(const FunctionCallbackInfo<Value>& args) {
+	Isolate* isolate = args.GetIsolate();
+
 	int err;
 	errno = 0;
 	setpwent();
@@ -55,16 +67,18 @@ Handle<Value> setpwentMethod(const Arguments& args) {
 
 	// Check for errors
 	if(err != 0) {
-		ThrowException(Exception::Error(String::New(strerror(err))));
-		return scope.Close(Undefined());
+		isolate->ThrowException(Exception::TypeError(
+        String::NewFromUtf8(isolate, strerror(err))));
+    	return;
 	}
-
-	return scope.Close(Undefined());
 }
 
-/* Binding for endpwent */
-Handle<Value> endpwentMethod(const Arguments& args) {
-	HandleScope scope;
+/* 
+* Binding for endpwent 
+* The endpwent() function is used to close the password database after all processing has been performed.
+*/
+void endpwentMethod(const FunctionCallbackInfo<Value>& args) {
+	Isolate* isolate = args.GetIsolate();
 	int err;
 	errno = 0;
 	endpwent();
@@ -72,21 +86,27 @@ Handle<Value> endpwentMethod(const Arguments& args) {
 
 	// Check for errors
 	if(err != 0) {
-		ThrowException(Exception::Error(String::New(strerror(err))));
-		return scope.Close(Undefined());
+		isolate->ThrowException(Exception::TypeError(
+        String::NewFromUtf8(isolate, strerror(err))));
+    	return;
 	}
 
-	return scope.Close(Undefined());
+	return;
 }
 
 
-/* Binding for getgrent */
-Handle<Value> getgrentMethod(const Arguments& args) {
-	HandleScope scope;
+/* 
+* Binding for getgrent 
+* The getgrent() function returns a pointer to a structure containing the broken-out fields of a record in the group database 
+* (e.g., the local group file /etc/group, NIS, and LDAP). 
+* The first time getgrent() is called, it returns the first entry; thereafter, it returns successive entries.
+*/
+void getgrentMethod(const FunctionCallbackInfo<Value>& args) {
+	Isolate* isolate = args.GetIsolate();
 	struct group *tmp;
 	int err;
-	char** mem_tmp;
-	int i;
+	// char** mem_tmp;
+	// int i;
 
 	errno = 0;
 	tmp = getgrent();
@@ -94,36 +114,36 @@ Handle<Value> getgrentMethod(const Arguments& args) {
 
 	// Check for errors
 	if(err != 0) {
-		ThrowException(Exception::Error(String::New(strerror(err))));
-		return scope.Close(Undefined());
+		isolate->ThrowException(Exception::TypeError(String::NewFromUtf8(isolate,strerror(err))));
 	}
 
 	// Check for end of data
 	if(tmp == NULL) {
-		return scope.Close(Undefined());
+		return;
 	}
 
 	// Return the data as an object
-	Local<Object> obj = Object::New();
+	Local<Object> obj = Object::New(isolate);
 
-	Local<Array> members = Array::New();
+	// Local<Array> members = Array::New();
 
-	i = 0;
-	for(mem_tmp = tmp->gr_mem; *mem_tmp; ++mem_tmp) {
-		members->Set(i, String::New(*mem_tmp));
-	}
-
-	obj->Set(String::NewSymbol("name"),   String::New(tmp->gr_name));
-	obj->Set(String::NewSymbol("passwd"), String::New(tmp->gr_passwd));
-	obj->Set(String::NewSymbol("gid"),    Number::New(tmp->gr_gid));
-	obj->Set(String::NewSymbol("members"), members);
-
-	return scope.Close(obj);
+	// i = 0;
+	// for(mem_tmp = tmp->gr_mem; *mem_tmp; ++mem_tmp) {
+	// 	members->Set(i, String::New(*mem_tmp));
+	// }
+	obj->Set(String::NewFromUtf8(isolate, "name"),   String::NewFromUtf8(isolate,tmp->gr_name));
+	obj->Set(String::NewFromUtf8(isolate, "passwd"), String::NewFromUtf8(isolate,tmp->gr_passwd));
+	obj->Set(String::NewFromUtf8(isolate, "gid"),    Number::New(isolate,tmp->gr_gid));
+	// obj->Set(String::NewSymbol("members"), members);
+	args.GetReturnValue().Set(obj);
 }
 
-/* Binding for setgrent */
-Handle<Value> setgrentMethod(const Arguments& args) {
-	HandleScope scope;
+/* 
+* Binding for setgrent 
+* The setgrent() function rewinds to the beginning of the group database, to allow repeated scans.
+*/
+void setgrentMethod(const FunctionCallbackInfo<Value>& args) {
+	Isolate* isolate = args.GetIsolate();
 	int err;
 	errno = 0;
 	setgrent();
@@ -131,16 +151,17 @@ Handle<Value> setgrentMethod(const Arguments& args) {
 
 	// Check for errors
 	if(err != 0) {
-		ThrowException(Exception::Error(String::New(strerror(err))));
-		return scope.Close(Undefined());
+		isolate->ThrowException(Exception::TypeError(String::NewFromUtf8(isolate,strerror(err))));
 	}
-
-	return scope.Close(Undefined());
 }
 
-/* Binding for endgrent */
-Handle<Value> endgrentMethod(const Arguments& args) {
-	HandleScope scope;
+/* 
+* Binding for endgrent 
+* The endgrent() function is used to close the group database after all processing has been performed.
+*/
+void endgrentMethod(const FunctionCallbackInfo<Value>& args) {
+	Isolate* isolate = args.GetIsolate();
+
 	int err;
 	errno = 0;
 	endgrent();
@@ -148,24 +169,19 @@ Handle<Value> endgrentMethod(const Arguments& args) {
 
 	// Check for errors
 	if(err != 0) {
-		ThrowException(Exception::Error(String::New(strerror(err))));
-		return scope.Close(Undefined());
+		isolate->ThrowException(Exception::TypeError(String::NewFromUtf8(isolate,strerror(err))));
 	}
-
-	return scope.Close(Undefined());
 }
 
+void init(Local<Object> exports) {
+  NODE_SET_METHOD(exports, "getpwent", getpwentMethod);
+  NODE_SET_METHOD(exports, "setpwent", setpwentMethod);
+  NODE_SET_METHOD(exports, "endpwent", endpwentMethod);
 
+  // NODE_SET_METHOD(exports, "getgrent", getgrentMethod);
+  NODE_SET_METHOD(exports, "setgrent", setgrentMethod);
+  NODE_SET_METHOD(exports, "endgrent", endgrentMethod);
 
-/* */
-void init(Handle<Object> exports) {
-	exports->Set(String::NewSymbol("getpwent"), FunctionTemplate::New(getpwentMethod)->GetFunction());
-	exports->Set(String::NewSymbol("setpwent"), FunctionTemplate::New(setpwentMethod)->GetFunction());
-	exports->Set(String::NewSymbol("endpwent"), FunctionTemplate::New(endpwentMethod)->GetFunction());
-
-	exports->Set(String::NewSymbol("getgrent"), FunctionTemplate::New(getgrentMethod)->GetFunction());
-	exports->Set(String::NewSymbol("setgrent"), FunctionTemplate::New(setgrentMethod)->GetFunction());
-	exports->Set(String::NewSymbol("endgrent"), FunctionTemplate::New(endgrentMethod)->GetFunction());
 }
 
 NODE_MODULE(getent, init)
