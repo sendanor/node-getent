@@ -105,8 +105,8 @@ void getgrentMethod(const FunctionCallbackInfo<Value>& args) {
 	Isolate* isolate = args.GetIsolate();
 	struct group *tmp;
 	int err;
-	// char** mem_tmp;
-	// int i;
+	char** mem_tmp;
+	int i;
 
 	errno = 0;
 	tmp = getgrent();
@@ -125,16 +125,16 @@ void getgrentMethod(const FunctionCallbackInfo<Value>& args) {
 	// Return the data as an object
 	Local<Object> obj = Object::New(isolate);
 
-	// Local<Array> members = Array::New();
+	Local<Array> members = Array::New(isolate);
 
-	// i = 0;
-	// for(mem_tmp = tmp->gr_mem; *mem_tmp; ++mem_tmp) {
-	// 	members->Set(i, String::New(*mem_tmp));
-	// }
+	i = 0;
+	for(mem_tmp = tmp->gr_mem; *mem_tmp; ++mem_tmp) {
+		members->Set(i, String::NewFromUtf8(isolate,*mem_tmp));
+	}
 	obj->Set(String::NewFromUtf8(isolate, "name"),   String::NewFromUtf8(isolate,tmp->gr_name));
 	obj->Set(String::NewFromUtf8(isolate, "passwd"), String::NewFromUtf8(isolate,tmp->gr_passwd));
 	obj->Set(String::NewFromUtf8(isolate, "gid"),    Number::New(isolate,tmp->gr_gid));
-	// obj->Set(String::NewSymbol("members"), members);
+	obj->Set(String::NewFromUtf8(isolate, "members"), members);
 	args.GetReturnValue().Set(obj);
 }
 
@@ -178,7 +178,7 @@ void init(Local<Object> exports) {
   NODE_SET_METHOD(exports, "setpwent", setpwentMethod);
   NODE_SET_METHOD(exports, "endpwent", endpwentMethod);
 
-  // NODE_SET_METHOD(exports, "getgrent", getgrentMethod);
+  NODE_SET_METHOD(exports, "getgrent", getgrentMethod);
   NODE_SET_METHOD(exports, "setgrent", setgrentMethod);
   NODE_SET_METHOD(exports, "endgrent", endgrentMethod);
 
