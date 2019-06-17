@@ -1,3 +1,5 @@
+### This project moved to https://gitlab.com/kingloud/node-getent
+
 node-getent
 ===========
 

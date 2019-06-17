@@ -1,7 +1,5 @@
 /* Node.js Crypt(3) implementation */
 
-#include <node.h>
-#include <v8.h>
 
 #include <sys/types.h> // for getpwent, setpwent, endpwent
 #include <pwd.h>
@@ -10,12 +8,23 @@
 #include <errno.h> // for errno
 #include <string.h> // for strerror
 
+#include <nan.h>
+
+using namespace Nan; 
 using namespace v8;
+using std::string;
+using std::vector;
 
 
-/* Binding for getpwent */
-Handle<Value> getpwentMethod(const Arguments& args) {
-	HandleScope scope;
+/* 
+* Binding for getpwent
+* The getpwent() function returns a pointer to a structure containing the broken-out fields of a record from the password database 
+* (e.g., the local password file /etc/passwd, NIS, and LDAP). 
+* The first time getpwent() is called, it returns the first entry; thereafter, it returns successive entries.
+*/
+
+NAN_METHOD (getpwentMethod) {
+
 	struct passwd *tmp;
 	int err;
 	errno = 0;
@@ -24,30 +33,31 @@ Handle<Value> getpwentMethod(const Arguments& args) {
 
 	// Check for errors
 	if(err != 0) {
-		ThrowException(Exception::Error(String::New(strerror(err))));
-		return scope.Close(Undefined());
+		Nan::ThrowError(Nan::New<v8::String>(strerror(err)).ToLocalChecked());
+	}else if(tmp == NULL) {
+	    info.GetReturnValue().Set(Nan::Undefined());
+	}else{
+		// Return the data as an object
+		v8::Local<v8::Object> obj = Nan::New<v8::Object>();
+		Nan::Set(obj, Nan::New<v8::String>("name").ToLocalChecked(),Nan::New<v8::String>(tmp->pw_name).ToLocalChecked());
+		Nan::Set(obj, Nan::New<v8::String>("name").ToLocalChecked(),Nan::New<v8::String>(tmp->pw_name).ToLocalChecked());
+		Nan::Set(obj, Nan::New<v8::String>("passwd").ToLocalChecked(),Nan::New<v8::String>(tmp->pw_passwd).ToLocalChecked());
+		Nan::Set(obj, Nan::New<v8::String>("uid").ToLocalChecked(),Nan::New<v8::Number>(tmp->pw_uid));
+		Nan::Set(obj, Nan::New<v8::String>("gid").ToLocalChecked(),Nan::New<v8::Number>(tmp->pw_gid));
+		Nan::Set(obj, Nan::New<v8::String>("gecos").ToLocalChecked(),Nan::New<v8::String>(tmp->pw_gecos).ToLocalChecked());
+		Nan::Set(obj, Nan::New<v8::String>("dir").ToLocalChecked(),Nan::New<v8::String>(tmp->pw_dir).ToLocalChecked());
+		Nan::Set(obj, Nan::New<v8::String>("shell").ToLocalChecked(),Nan::New<v8::String>(tmp->pw_shell).ToLocalChecked());
+		info.GetReturnValue().Set(obj);
 	}
 
-	// Check for end of data
-	if(tmp == NULL) {
-		return scope.Close(Undefined());
-	}
+}    	
 
-	// Return the data as an object
-	Local<Object> obj = Object::New();
-	obj->Set(String::NewSymbol("name"),   String::New(tmp->pw_name));
-	obj->Set(String::NewSymbol("passwd"), String::New(tmp->pw_passwd));
-	obj->Set(String::NewSymbol("uid"),    Number::New(tmp->pw_uid));
-	obj->Set(String::NewSymbol("gid"),    Number::New(tmp->pw_gid));
-	obj->Set(String::NewSymbol("gecos"),  String::New(tmp->pw_gecos));
-	obj->Set(String::NewSymbol("dir"),    String::New(tmp->pw_dir));
-	obj->Set(String::NewSymbol("shell"),  String::New(tmp->pw_shell));
-	return scope.Close(obj);
-}
+/* 
+* Binding for setpwent 
+* The setpwent() function rewinds to the beginning of the password database. 
+*/
+NAN_METHOD (setpwentMethod) {
 
-/* Binding for setpwent */
-Handle<Value> setpwentMethod(const Arguments& args) {
-	HandleScope scope;
 	int err;
 	errno = 0;
 	setpwent();
@@ -55,16 +65,19 @@ Handle<Value> setpwentMethod(const Arguments& args) {
 
 	// Check for errors
 	if(err != 0) {
-		ThrowException(Exception::Error(String::New(strerror(err))));
-		return scope.Close(Undefined());
+		Nan::ThrowError(Nan::New<v8::String>(strerror(err)).ToLocalChecked());
 	}
-
-	return scope.Close(Undefined());
+	
+	info.GetReturnValue().Set(Nan::Undefined());
+	
 }
 
-/* Binding for endpwent */
-Handle<Value> endpwentMethod(const Arguments& args) {
-	HandleScope scope;
+/* 
+* Binding for endpwent 
+* The endpwent() function is used to close the password database after all processing has been performed.
+*/
+NAN_METHOD (endpwentMethod) {
+
 	int err;
 	errno = 0;
 	endpwent();
@@ -72,17 +85,21 @@ Handle<Value> endpwentMethod(const Arguments& args) {
 
 	// Check for errors
 	if(err != 0) {
-		ThrowException(Exception::Error(String::New(strerror(err))));
-		return scope.Close(Undefined());
+		Nan::ThrowError(Nan::New<v8::String>(strerror(err)).ToLocalChecked());
+	}else{
+		info.GetReturnValue().Set(Nan::Undefined());
 	}
 
-	return scope.Close(Undefined());
 }
 
 
-/* Binding for getgrent */
-Handle<Value> getgrentMethod(const Arguments& args) {
-	HandleScope scope;
+/* 
+* Binding for getgrent 
+* The getgrent() function returns a pointer to a structure containing the broken-out fields of a record in the group database 
+* (e.g., the local group file /etc/group, NIS, and LDAP). 
+* The first time getgrent() is called, it returns the first entry; thereafter, it returns successive entries.
+*/
+NAN_METHOD (getgrentMethod) {
 	struct group *tmp;
 	int err;
 	char** mem_tmp;
@@ -94,36 +111,34 @@ Handle<Value> getgrentMethod(const Arguments& args) {
 
 	// Check for errors
 	if(err != 0) {
-		ThrowException(Exception::Error(String::New(strerror(err))));
-		return scope.Close(Undefined());
+		Nan::ThrowError(Nan::New<v8::String>(strerror(err)).ToLocalChecked());
+	}else if(tmp == NULL) {// Check for end of data
+		info.GetReturnValue().Set(Nan::Undefined());
+	}else{
+
+		// Return the data as an object
+		v8::Local<v8::Object> obj = Nan::New<v8::Object>();
+		v8::Local<v8::Array> members = Nan::New<v8::Array>();
+
+		i = 0;
+		for(mem_tmp = tmp->gr_mem; *mem_tmp; ++mem_tmp) {
+			Nan::Set(members,i,Nan::New<v8::String>(*mem_tmp).ToLocalChecked());
+			i++;
+		}
+
+		Nan::Set(obj, Nan::New<v8::String>("name").ToLocalChecked(),Nan::New<v8::String>(tmp->gr_name).ToLocalChecked());
+		Nan::Set(obj, Nan::New<v8::String>("passwd").ToLocalChecked(),Nan::New<v8::String>(tmp->gr_passwd).ToLocalChecked());
+		Nan::Set(obj, Nan::New<v8::String>("gid").ToLocalChecked(),Nan::New<v8::Number>(tmp->gr_gid));
+		Nan::Set(obj, Nan::New<v8::String>("members").ToLocalChecked(),members);
+		info.GetReturnValue().Set(obj);
 	}
-
-	// Check for end of data
-	if(tmp == NULL) {
-		return scope.Close(Undefined());
-	}
-
-	// Return the data as an object
-	Local<Object> obj = Object::New();
-
-	Local<Array> members = Array::New();
-
-	i = 0;
-	for(mem_tmp = tmp->gr_mem; *mem_tmp; ++mem_tmp) {
-		members->Set(i, String::New(*mem_tmp));
-	}
-
-	obj->Set(String::NewSymbol("name"),   String::New(tmp->gr_name));
-	obj->Set(String::NewSymbol("passwd"), String::New(tmp->gr_passwd));
-	obj->Set(String::NewSymbol("gid"),    Number::New(tmp->gr_gid));
-	obj->Set(String::NewSymbol("members"), members);
-
-	return scope.Close(obj);
 }
 
-/* Binding for setgrent */
-Handle<Value> setgrentMethod(const Arguments& args) {
-	HandleScope scope;
+/* 
+* Binding for setgrent 
+* The setgrent() function rewinds to the beginning of the group database, to allow repeated scans.
+*/
+NAN_METHOD (setgrentMethod) {
 	int err;
 	errno = 0;
 	setgrent();
@@ -131,16 +146,17 @@ Handle<Value> setgrentMethod(const Arguments& args) {
 
 	// Check for errors
 	if(err != 0) {
-		ThrowException(Exception::Error(String::New(strerror(err))));
-		return scope.Close(Undefined());
+		Nan::ThrowError(Nan::New<v8::String>(strerror(err)).ToLocalChecked());
+	}else{
+		info.GetReturnValue().Set(Nan::Undefined());
 	}
-
-	return scope.Close(Undefined());
 }
 
-/* Binding for endgrent */
-Handle<Value> endgrentMethod(const Arguments& args) {
-	HandleScope scope;
+/* 
+* Binding for endgrent 
+* The endgrent() function is used to close the group database after all processing has been performed.
+*/
+NAN_METHOD (endgrentMethod) {
 	int err;
 	errno = 0;
 	endgrent();
@@ -148,26 +164,23 @@ Handle<Value> endgrentMethod(const Arguments& args) {
 
 	// Check for errors
 	if(err != 0) {
-		ThrowException(Exception::Error(String::New(strerror(err))));
-		return scope.Close(Undefined());
+		Nan::ThrowError(Nan::New<v8::String>(strerror(err)).ToLocalChecked());
+	}else{
+		info.GetReturnValue().Set(Nan::Undefined());
 	}
-
-	return scope.Close(Undefined());
 }
 
+NAN_MODULE_INIT(Init) {
+  Export(target, "getpwent",getpwentMethod);
+  Export(target, "setpwent", setpwentMethod);
+  Export(target, "endpwent",endpwentMethod);
 
+  Export(target, "getgrent",getgrentMethod);
+  Export(target, "setgrent", setgrentMethod);
+  Export(target, "endgrent",endgrentMethod);
 
-/* */
-void init(Handle<Object> exports) {
-	exports->Set(String::NewSymbol("getpwent"), FunctionTemplate::New(getpwentMethod)->GetFunction());
-	exports->Set(String::NewSymbol("setpwent"), FunctionTemplate::New(setpwentMethod)->GetFunction());
-	exports->Set(String::NewSymbol("endpwent"), FunctionTemplate::New(endpwentMethod)->GetFunction());
-
-	exports->Set(String::NewSymbol("getgrent"), FunctionTemplate::New(getgrentMethod)->GetFunction());
-	exports->Set(String::NewSymbol("setgrent"), FunctionTemplate::New(setgrentMethod)->GetFunction());
-	exports->Set(String::NewSymbol("endgrent"), FunctionTemplate::New(endgrentMethod)->GetFunction());
 }
 
-NODE_MODULE(getent, init)
+NODE_MODULE(getent, Init)
 
 /* EOF */

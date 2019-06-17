@@ -1,6 +1,6 @@
 {
-  "name": "getent",
-  "version": "0.1.2",
+  "name": "@opendrives/getent",
+  "version": "0.2.0",
   "description": "Get entries from administrative databases for Node.js",
   "main": "index.js",
   "scripts": {
@@ -16,10 +16,11 @@
     "passwd",
     "getent",
     "getpwent",
-	"setpwent",
-	"endpwent"
+    "setpwent",
+    "endpwent"
   ],
-  "dependencies":{
+  "dependencies": {
+    "nan": "^2.6.2",
     "node-gyp": "*"
   },
   "author": "Jaakko-Heikki Heusala <jheusala@iki.fi>",

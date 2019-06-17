@@ -21,3 +21,10 @@ console.log("Fetch root and nobody:");
 var users = getent.passwd(["root", "nobody"]);
 console.log( JSON.stringify(users) );
 console.log("-EOL-");
+
+console.log("Fetch all groups using callback:");
+getent.group(function(group) {
+	console.log( JSON.stringify(group) );
+});
+console.log("-EOL-");
+

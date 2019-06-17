@@ -19,8 +19,14 @@ databases.passwd = function(keys, fn) {
 				fn(item);
 			}
 		}
+	} catch (error){
+	// hmm throwing an error, what to do?	
 	} finally {
+	    try{
 		internal.endpwent();
+	    }catch(error){
+            // couldn't close?  
+	    }
 	}
 };
 
@@ -40,8 +46,14 @@ databases.group = function(keys, fn) {
 				fn(item);
 			}
 		}
+	} catch ( error ){
+	// hmm throwing an error, what to do?	
 	} finally {
+	    try{
 		internal.endgrent();
+	    }catch(error){
+            // couldn't close?  
+	    }
 	}
 };
 
